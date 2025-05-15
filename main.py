@@ -3,6 +3,10 @@ import gzip
 import re
 import requests
 
+traited_files = 0
+downloaded = 0
+mismatched = 0
+
 def extraire_premiere_url(contenu_bytes):
     try:
         texte = contenu_bytes.decode("utf-8")
@@ -41,7 +45,9 @@ def traiter_fichiers():
         print("Aucun fichier .dat trouvé dans le dossier 'input'.")
         return
 
+    global traited_files, downloaded, mismatched
     for fichier in fichiers:
+        traited_files += 1
         chemin = os.path.join("input", fichier)
         try:
             with gzip.open(chemin, 'rb') as f:
@@ -55,12 +61,21 @@ def traiter_fichiers():
             nom_fichier = os.path.basename(url).split('?')[0]
             chemin_image = os.path.join("output", nom_fichier)
             if telecharger_image(url, chemin_image):
+                downloaded += 1
                 print(f"Téléchargé : {nom_fichier}")
             else:
-                print(r"Échec du téléchargement pour : {url}")
+                mismatched += 1
+                print(r"Échec du téléchargement pour : " + url)
                 ajouter_url_non_telechargee(url)
         else:
             print(f"Aucune URL détectée dans : {fichier}")
 
 if __name__ == "__main__":
     traiter_fichiers()
+    print("")
+    print("---------------------------------------------------------------------------")
+    print(f"Traitement terminé : {traited_files} fichiers traités, {downloaded} téléchargés, {mismatched} non téléchargés.")
+    print("---------------------------------------------------------------------------")
+    print("Les URLs non téléchargées ont été enregistrées dans 'mismatched_urls.txt'.")
+    print("---------------------------------------------------------------------------")
+    print("Développé par Epyi")
